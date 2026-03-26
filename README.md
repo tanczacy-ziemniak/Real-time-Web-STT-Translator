@@ -1,6 +1,6 @@
-# Real-time Web STT to Polish Translator (Powered by Ollama)
+# Real-time Web STT Translator (Powered by Ollama)
 
-A simple, single-page web application that converts real-time Korean (or English) speech to text using the browser's Web Speech API, and automatically translates it into professional Polish using a local Ollama instance running the `gemma3n:e2b` model.
+A simple, single-page web application that converts real-time speech to text using the browser's Web Speech API, and automatically translates it into languages that user wants using a local Ollama instance running the `gemma3n:e2b` model.
 
 This project includes a real-time audio visualizer and an integrated Debug Console to monitor STT status and API responses.
 
