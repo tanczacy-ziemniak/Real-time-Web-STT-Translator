@@ -8,7 +8,7 @@ This project includes a real-time audio visualizer and an integrated Debug Conso
 
 * **Always-on Listening:** Continuously listens to microphone input (defaulting to Korean, customizable).
 * **Local LLM Translation:** No API keys needed. Uses your local Ollama server for privacy and free usage.
-* **Polish Translation:** Enforces Polish output via system prompt regardless of input language (KR/EN).
+* **Dynamic Language Selection:** Supports 9 built-in languages (Korean, English, Polish, Japanese, Chinese, Spanish, French, German, Vietnamese) via a user-friendly UI dropdown.
 * **Integrated Debug Console:** Real-time logging of STT events, API request payloads, responses, and network errors.
 * **Live Audio Visualizer:** Simple canvas visualizer showing microphone activity.
 * **Reverse Chronological Log:** Displays latest original text and translation at the top.
