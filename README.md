@@ -54,16 +54,3 @@ Browser security policies often block microphone data transfer (required by STT)
     python -m http.server 8000
     ```
     Then open `http://localhost:8000` in your browser.
-
-## 🛠️ Configuration & Troubleshooting
-
-### Input Language
-
-The default Speech-to-Text language is set to Korean (`ko-KR`). To change it to English, edit the following line in `index.html`:
-
-```javascript
-// From
-recognition.lang = 'ko-KR';
-
-// To
-recognition.lang = 'en-US';
