@@ -2,100 +2,103 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Always-on STT & Polish Real-time Translation (Debug Mode)</title>
+    <title>Universal Real-time STT & Translator (Powered by Ollama)</title>
     <style>
         body { font-family: sans-serif; padding: 20px; background-color: #f0f2f5; }
+        h1 { color: #333; font-size: 24px; }
+        
+        /* --- Controls UI --- */
+        #controls {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #ddd;
+        }
+
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            outline: none;
+            cursor: pointer;
+        }
+
         #status { font-weight: bold; margin-bottom: 10px; color: #0056b3; }
         #error-msg { color: red; font-weight: bold; margin-bottom: 10px; }
         
         #visualizer { 
-            width: 100%; 
-            height: 80px; 
-            background-color: #222; 
-            border-radius: 8px;
+            width: 100%; height: 80px; 
+            background-color: #222; border-radius: 8px;
             margin-bottom: 20px;
         }
 
         #log-container {
-            background-color: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            width: 95%;
-            height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: white; border: 1px solid #ddd;
+            border-radius: 8px; padding: 15px;
+            width: 95%; height: 400px;
+            overflow-y: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
 
         #interim-box {
-            color: #d9534f;
-            font-weight: bold;
-            font-size: 18px;
-            min-height: 28px;
-            margin-bottom: 15px;
-            border-bottom: 2px dashed #eee;
-            padding-bottom: 10px;
+            color: #d9534f; font-weight: bold; font-size: 18px;
+            min-height: 28px; margin-bottom: 15px;
+            border-bottom: 2px dashed #eee; padding-bottom: 10px;
         }
 
         .log-entry {
-            margin: 0 0 15px 0;
-            padding: 12px;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            color: #333;
-            font-size: 16px;
-            animation: fadeIn 0.5s;
-            border-left: 4px solid #0056b3;
+            margin: 0 0 15px 0; padding: 12px;
+            background-color: #f8f9fa; border-radius: 6px;
+            color: #333; font-size: 16px;
+            animation: fadeIn 0.5s; border-left: 4px solid #0056b3;
         }
 
         .timestamp { font-size: 12px; color: #888; margin-right: 10px; }
         .original-text { margin-bottom: 8px; font-weight: bold; }
-        .translated-text { padding-left: 5px; color: #dc143c; font-size: 15px; }
+        .translated-text { padding-left: 5px; color: #008000; font-size: 15px; }
 
-        /* --- Debug Panel Style --- */
+        /* --- Debug Panel Styles --- */
         #debug-panel {
-            background-color: #1e1e1e;
-            color: #d4d4d4;
+            background-color: #1e1e1e; color: #d4d4d4;
             font-family: 'Courier New', Courier, monospace;
-            padding: 15px;
-            border-radius: 8px;
-            width: 95%;
-            height: 250px;
-            overflow-y: auto;
-            font-size: 13px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-            /* Visible by default */
-            display: block; 
+            padding: 15px; border-radius: 8px; width: 95%; height: 250px;
+            overflow-y: auto; font-size: 13px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5); display: block;
         }
-
-        .debug-title-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 95%;
-            margin-bottom: 5px;
-        }
-
+        .debug-title-bar { display: flex; justify-content: space-between; align-items: center; width: 95%; margin-bottom: 5px; }
         .debug-msg { margin-bottom: 5px; border-bottom: 1px solid #333; padding-bottom: 3px; }
-        .debug-info { color: #569cd6; } /* Blue */
-        .debug-api { color: #4ec9b0; }  /* Teal */
-        .debug-error { color: #f44336; font-weight: bold; } /* Red */
-        
+        .debug-info { color: #569cd6; }
+        .debug-api { color: #4ec9b0; }
+        .debug-error { color: #f44336; font-weight: bold; }
         button { cursor: pointer; padding: 5px 10px; border-radius: 4px; border: 1px solid #ccc; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <h1>🎤 Real-time Korean ➡️ Polish STT Translator</h1>
+    <h1>🌐 Universal Real-time STT Translator</h1>
     
+    <div id="controls">
+        <label>
+            <strong>🎙️ STT Source:</strong>
+            <select id="source-lang"></select>
+        </label>
+        <span style="font-size: 20px;">➡️</span>
+        <label>
+            <strong>📝 Translation Target:</strong>
+            <select id="target-lang"></select>
+        </label>
+    </div>
+
     <canvas id="visualizer"></canvas>
 
-    <div id="status">Status: Checking microphone permissions...</div>
+    <div id="status">Status: Checking microphone permission...</div>
     <div id="error-msg"></div>
     
     <div id="log-container">
@@ -107,7 +110,7 @@
         <h3>🛠️ Debug Console (System Logs)</h3>
         <div>
             <button onclick="document.getElementById('debug-content').innerHTML = ''">Clear Logs</button>
-            <button onclick="toggleDebug()">Toggle Window</button>
+            <button onclick="toggleDebug()">Toggle Debug Window</button>
         </div>
     </div>
     <div id="debug-panel">
@@ -115,6 +118,40 @@
     </div>
 
     <script>
+        // --- Supported Languages Configuration ---
+        const languages = [
+            { code: 'ko-KR', name: 'Korean (한국어)', englishName: 'Korean', flag: '🇰🇷' },
+            { code: 'en-US', name: 'English (US)', englishName: 'English', flag: '🇺🇸' },
+            { code: 'pl-PL', name: 'Polish (Polski)', englishName: 'Polish', flag: '🇵🇱' },
+            { code: 'ja-JP', name: 'Japanese (日本語)', englishName: 'Japanese', flag: '🇯🇵' },
+            { code: 'zh-CN', name: 'Chinese (中文)', englishName: 'Chinese', flag: '🇨🇳' },
+            { code: 'es-ES', name: 'Spanish (Español)', englishName: 'Spanish', flag: '🇪🇸' },
+            { code: 'fr-FR', name: 'French (Français)', englishName: 'French', flag: '🇫🇷' },
+            { code: 'de-DE', name: 'German (Deutsch)', englishName: 'German', flag: '🇩🇪' },
+            { code: 'vi-VN', name: 'Vietnamese (Tiếng Việt)', englishName: 'Vietnamese', flag: '🇻🇳' }
+        ];
+
+        // Populate Select Dropdowns
+        const sourceSelect = document.getElementById('source-lang');
+        const targetSelect = document.getElementById('target-lang');
+
+        languages.forEach(lang => {
+            const sourceOption = document.createElement('option');
+            sourceOption.value = lang.code;
+            sourceOption.text = `${lang.flag} ${lang.name}`;
+            sourceSelect.appendChild(sourceOption);
+
+            const targetOption = document.createElement('option');
+            targetOption.value = lang.englishName; // Use English name for LLM prompt
+            targetOption.text = `${lang.flag} ${lang.name}`;
+            targetOption.dataset.flag = lang.flag; // Store flag for UI
+            targetSelect.appendChild(targetOption);
+        });
+
+        // Default selections (Korean -> Polish)
+        sourceSelect.value = 'ko-KR';
+        targetSelect.value = 'Polish';
+
         const statusDiv = document.querySelector('#status');
         const errorDiv = document.querySelector('#error-msg');
         const interimBox = document.querySelector('#interim-box');
@@ -127,40 +164,36 @@
         canvas.width = canvas.offsetWidth;
         canvas.height = canvas.offsetHeight;
 
-        // 🛠️ Debug log recording function
+        let recognition;
+        let isRecognizing = false;
+
         function addDebugLog(message, type = 'info') {
             const time = new Date().toLocaleTimeString();
             const logDiv = document.createElement('div');
             logDiv.className = `debug-msg debug-${type}`;
-            
-            // Convert object to pretty string
             const safeMessage = typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
-            
             logDiv.innerText = `[${time}] ${safeMessage}`;
             debugContent.appendChild(logDiv);
-            
-            // Keep scroll at bottom
             debugPanel.scrollTop = debugPanel.scrollHeight;
         }
 
-        // Debug window toggle function
         function toggleDebug() {
             debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
         }
 
-        // 🟢 Function to call Ollama API and translate to Polish
-        async function translateToPolish(text, uiElement) {
-            const OLLAMA_URL = 'http://localhost:11434/api/generate';
+        // 🟢 Dynamic Translation Function
+        async function translateText(text, uiElement, targetLangName, targetFlag) {
+            const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate'; 
             
             const payload = {
                 model: 'gemma3n:e2b',
                 prompt: text,
-                system: "You are a professional translator. Translate the given text into Polish. Output ONLY the translated Polish text without any quotes, explanations, or notes.",
+                // Dynamic System Prompt based on selected target language
+                system: `You are a professional translator. Translate the given text into ${targetLangName}. Output ONLY the translated ${targetLangName} text without any quotes, explanations, or notes.`,
                 stream: false
             };
 
-            addDebugLog(`Sending API request... (Model: ${payload.model})`, 'api');
-            addDebugLog(`Payload: ${JSON.stringify(payload)}`, 'info');
+            addDebugLog(`Translating to ${targetLangName}... (Model: ${payload.model})`, 'api');
 
             try {
                 const response = await fetch(OLLAMA_URL, {
@@ -169,49 +202,57 @@
                     body: JSON.stringify(payload)
                 });
 
-                addDebugLog(`API Response status code: ${response.status}`, 'api');
-
-                if (!response.ok) {
-                    throw new Error(`HTTP Error occurred! Status code: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
 
                 const data = await response.json();
-                addDebugLog(`API Response data received`, 'api');
-                addDebugLog(data, 'info'); // Log full response object
+                addDebugLog(`API response received successfully`, 'api');
 
-                uiElement.innerHTML = `🇵🇱 ${data.response.trim()}`;
+                uiElement.innerHTML = `${targetFlag} ${data.response.trim()}`;
             } catch (error) {
                 console.error("Ollama API Error:", error);
-                
-                // Branch debug message by error cause
                 if (error.message.includes('Failed to fetch')) {
-                    addDebugLog(`Network error: Ollama server is down or CORS error occurred. (Check OLLAMA_ORIGINS="*" setting)`, 'error');
+                    addDebugLog(`Network Error: Ollama server is offline or CORS blocked.`, 'error');
                 } else {
                     addDebugLog(`API Error: ${error.message}`, 'error');
                 }
-
-                uiElement.innerHTML = "❌ <i>Translation failed (check debug console)</i>";
+                uiElement.innerHTML = "❌ <i>Translation failed (Check debug console)</i>";
                 uiElement.style.color = "red";
             }
         }
 
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
         
-        if (!SpeechRecognition) {
-            errorDiv.innerText = "❌ This browser does not support STT API.";
-            addDebugLog("Browser unsupported error", "error");
+        if (!SpeechRecognitionAPI) {
+            errorDiv.innerText = "❌ This browser does not support the STT API.";
+            addDebugLog("Browser compatibility error", "error");
         } else {
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'ko-KR'; 
+            recognition = new SpeechRecognitionAPI();
             recognition.continuous = true;     
             recognition.interimResults = true; 
 
+            // Handle Source Language Change dynamically
+            sourceSelect.addEventListener('change', () => {
+                const newLang = sourceSelect.value;
+                recognition.lang = newLang;
+                addDebugLog(`Source language changed to: ${newLang}`, 'info');
+                
+                // Restart STT to apply new language
+                if (isRecognizing) {
+                    recognition.stop(); 
+                }
+            });
+
+            // Initialize STT language
+            recognition.lang = sourceSelect.value;
+
             recognition.onstart = () => {
-                addDebugLog("🎤 STT Microphone recognition started", "info");
+                isRecognizing = true;
+                addDebugLog("🎤 STT recognition started", "info");
+                statusDiv.innerText = "Status: ✅ Microphone active. Speak freely!";
             };
 
             recognition.onerror = (event) => {
-                addDebugLog(`🎤 STT Error occurred: ${event.error}`, "error");
+                addDebugLog(`🎤 STT error occurred: ${event.error}`, "error");
             };
 
             recognition.onresult = (event) => {
@@ -225,8 +266,7 @@
                         const logDiv = document.createElement('div');
                         logDiv.className = 'log-entry';
                         
-                        const now = new Date();
-                        const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+                        const timeStr = new Date().toLocaleTimeString();
                         
                         const originalDiv = document.createElement('div');
                         originalDiv.className = 'original-text';
@@ -240,28 +280,30 @@
                         logDiv.appendChild(translatedDiv);
                         historyBox.prepend(logDiv);
 
-                        translateToPolish(finalTranscript, translatedDiv);
+                        // Get currently selected target language data
+                        const selectedTargetOption = targetSelect.options[targetSelect.selectedIndex];
+                        const targetLangEnglishName = selectedTargetOption.value;
+                        const targetLangFlag = selectedTargetOption.dataset.flag;
+
+                        translateText(finalTranscript, translatedDiv, targetLangEnglishName, targetLangFlag);
 
                     } else {
                         interimTranscript += event.results[i][0].transcript;
                     }
                 }
-                
                 interimBox.innerText = interimTranscript ? `Listening: ${interimTranscript}` : '';
             };
 
             recognition.onend = () => {
-                addDebugLog("🔄 STT recognition paused. Attempting auto-restart...", "info");
-                statusDiv.innerText = "Status: Paused... Listening again 🔄";
+                isRecognizing = false;
+                addDebugLog("🔄 STT recognition ended. Attempting automatic restart...", "info");
+                statusDiv.innerText = "Status: Paused... Restarting automatically 🔄";
                 recognition.start(); 
             };
 
             window.addEventListener('load', async () => {
-                addDebugLog("Page loaded. Requesting microphone permissions...", "info");
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    statusDiv.innerText = "Status: ✅ Microphone active. Speak freely!";
-                    addDebugLog("Microphone permission granted", "info");
                     visualizeAudio(stream);
                     recognition.start();
                 } catch (err) {
@@ -272,7 +314,7 @@
             });
         }
 
-        // Audio visualization (same as before)
+        // Audio Visualization
         function visualizeAudio(stream) {
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             const analyser = audioCtx.createAnalyser();
